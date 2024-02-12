@@ -1,0 +1,13 @@
+float setpoint = 510;
+float gyroRead = analogRead(pitch);
+float error = setpoint - gyroRead;
+float proError = error * kp; // Proportional Term
+sum = sum + error;
+/// pos towards board
+float intError = ki * sum; // Integral term
+12
+float previousError = error;
+float deriv = (error - previousError)*kd; // Derivative Term
+float result = proError + intError + deriv;
+speed = abs(result/10); // Scales the result to be within 0 to 255
+ptch = gyroRead;
