@@ -1,0 +1,98 @@
+// Assign digital pins to
+int enablePin1 = 3;
+int controlPin1 = 7;
+int controlPin2 = 4;
+int enablePin2 = 6;
+int controlPin3 = 2;
+int controlPin4 = 5;
+// Set analogue pin for pitch measurement
+int pitch = A2;
+int speed = 1;
+int ptch;
+int output1 = 1;
+int output2 = 1;
+int output3 = 1;
+int output4 = 1;
+void setup() {
+Serial.begin(9600);
+// Set pins as outputs
+pinMode(enablePin1, OUTPUT);
+pinMode(controlPin1, OUTPUT);
+pinMode(controlPin2, OUTPUT);
+pinMode(enablePin2, OUTPUT);
+pinMode(controlPin3, OUTPUT);
+pinMode(controlPin4, OUTPUT);
+pinMode(output1, OUTPUT);
+pinMode(output2, OUTPUT);
+pinMode(output3, OUTPUT);
+pinMode(output4, OUTPUT);
+// Set initial conditions for the pins
+analogWrite(enablePin1, 0);
+digitalWrite(controlPin1, LOW);
+digitalWrite(controlPin2, LOW);
+analogWrite(enablePin2, 0);
+digitalWrite(controlPin3, LOW);
+digitalWrite(controlPin4, LOW);
+analogWrite(output1, 0);
+analogWrite(output2, 0);
+analogWrite(output3, 0);
+analogWrite(output4, 0);
+}
+void loop() {
+// Define PID values
+float kp = 20;
+float ki = 30;
+float kd = 10;
+int sum = 0;
+// Calculate PID values
+float setpoint = 510;
+float gyroRead = analogRead(pitch);
+float error = setpoint - gyroRead;
+float proError = error * kp; // Proportional Term
+sum = sum + error;
+/// pos towards board
+float intError = ki * sum; // Integral term
+float previousError = error;
+float deriv = (error - previousError)*kd; // Derivative Term
+float result = proError + intError + deriv;
+speed = abs(result/10); // Scales the result to be within 0 to 255
+ptch = gyroRead;
+// Read values from sensor
+Serial.println(ptch);
+if (gyroRead > setpoint) {
+anti(); // Rotate anticlockwise if pitch reading in greater than the set
+value
+} else if (gyroRead < setpoint) {
+clockw(); // Rotate clockwise if pitch reading in greater than the set
+value
+} else {
+stop(); // If setpoint is equal to the gyro reading then the motor stops
+}
+}
+void clockw() {
+analogWrite(enablePin1, speed);
+analogWrite(enablePin2, speed);
+// motor moves clockwise
+digitalWrite(controlPin1, LOW);
+digitalWrite(controlPin2, HIGH);
+digitalWrite(controlPin3, LOW);
+digitalWrite(controlPin4, HIGH);
+}
+void anti() {
+analogWrite(enablePin1, speed);
+analogWrite(enablePin2, speed);
+// motor moves anticlockwise
+digitalWrite(controlPin1, HIGH);
+digitalWrite(controlPin2, LOW);
+digitalWrite(controlPin3, HIGH);
+digitalWrite(controlPin4, LOW);
+}
+void stop() {
+analogWrite(enablePin1, 0);
+analogWrite(enablePin2, 0);
+// motor stops moving
+digitalWrite(controlPin1, LOW);
+digitalWrite(controlPin2, LOW);
+digitalWrite(controlPin3, LOW);
+digitalWrite(controlPin4, LOW);
+}
